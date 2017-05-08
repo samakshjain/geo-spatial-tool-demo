@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html ng-app="geo">
+<head>
+  <!-- Leaflet's CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"
+    integrity="sha512-07I2e+7D8p6he1SIM+1twR5TIrhUQn9+I6yjqD53JQjFiMf8EtC93ty0/5vJTZGF8aAocvHYNEDJajGdNx1IsQ=="
+    crossorigin=""/>
+
+  <!-- Mapbox's CSS -->
+  <link href='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.css' rel='stylesheet' />
+
+  <!-- Custom CSS -->
+  <link rel="stylesheet" type="text/css" href="../static/css/style.css">
+  <!-- Latest compiled and minified CSS -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+  <!-- Optional theme -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+  <title>
+    Geo Sptial Tool Demo
+  </title>
+</head>
+
+<body ng-controller="GeoAppController">
+
+  <nav class="navbar navbar-default navbar-static-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">Geo spatial tool demo </a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="jumbotron">
+    <div class="container" ng-controller="MapController">
+      <div class="row">
+        <div class="col-lg-12">
+          <div id='map' ></div>
+        </div>
+      </div>
+      <div class="row top-margin">
+        <div class="col-lg-12">
+          <div class="btn-group" role="group">
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('earthquakes')">Earthquakes</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('storms')">Tropical Storms</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('floods')">Floods</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('tusnamis')">Tsunamis</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Jquery -->
+  <script
+    src="https://code.jquery.com/jquery-3.2.1.min.js"
+    integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+    crossorigin="anonymous"></script>
+  <!-- Latest compiled and minified JavaScript -->
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+  <!-- Angular JS -->
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.32/angular.min.js"></script>
+
+  <script type="text/javascript" src="app/app.module.js"></script>
+  <script type="text/javascript" src="app/components/map/map.controller.js"></script>
+
+  <!-- MapboxJS -->
+  <script src='https://api.mapbox.com/mapbox-gl-js/v0.36.0/mapbox-gl.js'></script>
+
+  <!-- Leaflet's JS -->
+  <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"
+  integrity="sha512-A7vV8IFfih/D732iSSKi20u/ooOfj/AGehOKq0f4vLT1Zr2Y+RX7C+w8A1gaSasGtRUZpF/NZgzSAu4/Gc41Lg=="
+  crossorigin=""></script>
+
+  <!-- RequireJS -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.3/require.min.js"></script>
+
+  <script>
+    // Initialize map via Leaflet.js
+    var mymap = L.map('map').setView([51.505, -0.09], 4);
+    var mapboxAccessToken = 'pk.eyJ1IjoiemluY2hlIiwiYSI6ImNqMmRwYTJxajAwM2cyd281N3A3cnFrd2sifQ.RDnECIKC1KEfRz_k8Xexrg';
+    // Get user's location
+    (function getLocation() {
+      if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(showPosition);
+      }
+    })();
+    function showPosition(pos) {
+      mymap.setView([pos.coords.latitude, pos.coords.longitude])
+    }
+
+    // Add a tile layer
+    L.tileLayer('https://api.mapbox.com/styles/v1/zinche/cj2g018sj008a2rnqo4n8jkjl/tiles/256/{z}/{x}/{y}?access_token=' + mapboxAccessToken, {
+        attribution: 'zinche',
+        maxZoom: 8,
+        minZoom: 2,
+        accessToken: mapboxAccessToken
+    }).addTo(mymap);
+  </script>
+</body>
+</html>
