@@ -40,12 +40,49 @@
         </div>
       </div>
       <div class="row top-margin">
-        <div class="col-lg-12">
-          <div class="btn-group" role="group">
-            <button type="button" class="btn btn-default" ng-click="toggleDataset('earthquakes')">Earthquakes</button>
-            <button type="button" class="btn btn-default" ng-click="toggleDataset('storms')">Tropical Storms</button>
-            <button type="button" class="btn btn-default" ng-click="toggleDataset('floods')">Floods</button>
-            <button type="button" class="btn btn-default" ng-click="toggleDataset('tusnamis')">Tsunamis</button>
+        <div class="col-md-3">
+          <div class="btn-group btn-group-vertical text-center" style="width: 100%;" role="group">
+            <h3>Earthquakes</h3>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('earthquakes', 'value_1')">Richter Scale Magnitude</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('earthquakes', 'value_2')">Focal Depth</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('earthquakes', 'fatalities')">Fatalities</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('earthquakes', 'affected_people')">Affected People</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('earthquakes', 'economic_loss')">Economic Loss</button>
+            <button type="button" class="btn btn-default" ng-click="clearDataset('earthquakes')">Clear</button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="btn-group btn-group-vertical text-center" style="width: 100%;" role="group">
+            <h3>Tropical Storms</h3>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('storms', 'value_1')">Storm Category</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('storms', 'value_2')">Max Wind Speed (kph)</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('storms', 'fatalities')">Fatalities</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('storms', 'affected_people')">Affected People</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('storms', 'economic_loss')">Economic Loss</button>
+            <button type="button" class="btn btn-default" ng-click="clearDataset('storms')">Clear</button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="btn-group btn-group-vertical text-center" style="width: 100%;" role="group">
+            <h3>Floods</h3>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('floods', 'value_1')">Flood magnitude</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('floods', 'value_2')">Affected area (sq km)</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('floods', 'value_3')">Severity class</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('floods', 'fatalities')">Fatalities</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('floods', 'affected_people')">Affected People</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('floods', 'economic_loss')">Economic Loss</button>
+            <button type="button" class="btn btn-default" ng-click="clearDataset('floods')">Clear</button>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="btn-group btn-group-vertical text-center" style="width: 100%;" role="group">
+            <h3>Tsunamis</h3>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('tsunamis', 'value_1')">Richter Scale Magnitude</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('tsunamis', 'value_2')">Focal Depth</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('tsunamis', 'fatalities')">Fatalities</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('tsunamis', 'affected_people')">Affected People</button>
+            <button type="button" class="btn btn-default" ng-click="toggleDataset('tsunamis', 'economic_loss')">Economic Loss</button>
+            <button type="button" class="btn btn-default" ng-click="clearDataset('tsunamis')">Clear</button>
           </div>
         </div>
       </div>
@@ -80,7 +117,7 @@
 
   <script>
     // Initialize map via Leaflet.js
-    var mymap = L.map('map').setView([51.505, -0.09], 4);
+    var mymap = L.map('map').setView([51.505, -0.09], 2);
     var mapboxAccessToken = 'pk.eyJ1IjoiemluY2hlIiwiYSI6ImNqMmRwYTJxajAwM2cyd281N3A3cnFrd2sifQ.RDnECIKC1KEfRz_k8Xexrg';
     // Get user's location
     (function getLocation() {
@@ -95,7 +132,7 @@
     // Add a tile layer
     L.tileLayer('https://api.mapbox.com/styles/v1/zinche/cj2g018sj008a2rnqo4n8jkjl/tiles/256/{z}/{x}/{y}?access_token=' + mapboxAccessToken, {
         attribution: 'zinche',
-        maxZoom: 8,
+        maxZoom: 20,
         minZoom: 2,
         accessToken: mapboxAccessToken
     }).addTo(mymap);
