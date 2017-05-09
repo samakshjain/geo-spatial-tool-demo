@@ -4,45 +4,67 @@
 
   geoApp.controller('MapController', function MapController($scope, $http, $window) {
 
+
+    function getRangeBreaks(min, max) {
+      var NO_OF_RANGES = 7;
+      // For a rough estimate, giving the range a room of 1.25*boundary
+      var BOUNDARY_ROUND_OFF = 1.25
+      r_max = Math.round(BOUNDARY_ROUND_OFF*max); // 75 -> 90
+      r_min = Math.round(min/BOUNDARY_ROUND_OFF); // 6 -> 0
+      r_max = Math.round(r_max + r_max%10); // Round up
+      r_min = Math.round(r_min - r_min%10); // Round down
+      range_width = Math.floor((r_max - r_min) / NO_OF_RANGES);
+      breakpoints = [r_min];
+      for (var i = 0; i < 5; i++) {
+        breakpoints.push(breakpoints[i] + range_width);
+      }
+      breakpoints.push(r_max);
+      return breakpoints;
+    }
+
     // Color functions for different events
-    function getColorForEarthquakes(d) {
-      return d > 8   ? '#800026' :
-             d > 7.5 ? '#BD0026' :
-             d > 7   ? '#E31A1C' :
-             d > 6.5 ? '#FC4E2A' :
-             d > 6   ? '#FD8D3C' :
-             d > 5.5 ? '#FEB24C' :
-             d > 5   ? '#FED976' :
+    function getColorForEarthquakes(d, min, max) {
+      rangeBreaks = getRangeBreaks(min, max);
+      return d > rangeBreaks[6] ? '#800026' :
+             d > rangeBreaks[5] ? '#BD0026' :
+             d > rangeBreaks[4] ? '#E31A1C' :
+             d > rangeBreaks[3] ? '#FC4E2A' :
+             d > rangeBreaks[2] ? '#FD8D3C' :
+             d > rangeBreaks[1] ? '#FEB24C' :
+             d > rangeBreaks[0] ? '#FED976' :
               '#FFEDA0';
     }
-    function getColorForFloods(d) {
-      return d > 8   ? '#4a1486' :
-             d > 7.5 ? '#6a51a3' :
-             d > 7   ? '#807dba' :
-             d > 6.5 ? '#9e9ac8' :
-             d > 6   ? '#bcbddc' :
-             d > 5.5 ? '#dadaeb' :
-             d > 5   ? '#efedf5' :
+    function getColorForFloods(d, min, max) {
+      rangeBreaks = getRangeBreaks(min, max);
+      return d > rangeBreaks[6] ? '#4a1486' :
+             d > rangeBreaks[5] ? '#6a51a3' :
+             d > rangeBreaks[4] ? '#807dba' :
+             d > rangeBreaks[3] ? '#9e9ac8' :
+             d > rangeBreaks[2] ? '#bcbddc' :
+             d > rangeBreaks[1] ? '#dadaeb' :
+             d > rangeBreaks[0] ? '#efedf5' :
               '#fcfbfd';
     }
-    function getColorForStorms(d) {
-      return d > 8   ? '#8c2d04' :
-             d > 7.5 ? '#d94801' :
-             d > 7   ? '#f16913' :
-             d > 6.5 ? '#fd8d3c' :
-             d > 6   ? '#fdae6b' :
-             d > 5.5 ? '#fdd0a2' :
-             d > 5   ? '#fee6ce' :
+    function getColorForStorms(d, min, max) {
+      rangeBreaks = getRangeBreaks(min, max);
+      return d > rangeBreaks[6] ? '#8c2d04' :
+             d > rangeBreaks[5] ? '#d94801' :
+             d > rangeBreaks[4] ? '#f16913' :
+             d > rangeBreaks[3] ? '#fd8d3c' :
+             d > rangeBreaks[2] ? '#fdae6b' :
+             d > rangeBreaks[1] ? '#fdd0a2' :
+             d > rangeBreaks[0] ? '#fee6ce' :
               '#fff5eb';
     }
-    function getColorForTsunamis(d) {
-      return d > 8   ? '#005a32' :
-             d > 7.5 ? '#238b45' :
-             d > 7   ? '#41ab5d' :
-             d > 6.5 ? '#74c476' :
-             d > 6   ? '#a1d99b' :
-             d > 5.5 ? '#c7e9c0' :
-             d > 5   ? '#e5f5e0' :
+    function getColorForTsunamis(d, min, max) {
+      rangeBreaks = getRangeBreaks(min, max);
+      return d > rangeBreaks[6] ? '#005a32' :
+             d > rangeBreaks[5] ? '#238b45' :
+             d > rangeBreaks[4] ? '#41ab5d' :
+             d > rangeBreaks[3] ? '#74c476' :
+             d > rangeBreaks[2] ? '#a1d99b' :
+             d > rangeBreaks[1] ? '#c7e9c0' :
+             d > rangeBreaks[0] ? '#e5f5e0' :
               '#f7fcf5';
     }
     function onEachFeatureEarthquakes(feature, layer) {
@@ -96,11 +118,11 @@
     }
 
     // Helper function for making a layer using a colorFunc
-    function makeEventLayer(colorFunc, onEachFeature, value) {
+    function makeEventLayer(colorFunc, onEachFeature, value, data_point_details) {
       var pointToLayer = function(feature, latlng) {
         return L.circleMarker(latlng, {
           radius: 3,
-          fillColor: colorFunc(feature.properties[value]),
+          fillColor: colorFunc(feature.properties[value], data_point_details.min, data_point_details.max),
           color: '#000',
           weight: 1,
           opacity: 1,
@@ -109,23 +131,73 @@
       }
       return $window.L.geoJSON(false, {
           pointToLayer: pointToLayer,
-          onEachFeature: onEachFeatureEarthquakes
+          onEachFeature: onEachFeature
         })
     }
 
-    var commonDataPoints = [
-      'value_1',
-      'value_2',
-      'fatalities',
-      'affected_people',
-      'economic_loss'
+    function createDataPoints(min_max_array, extra_data_points) {
+      var baseDataPoints = {
+        'value_1': {},
+        'value_2': {},
+        'fatalities': {},
+        'affected_people': {},
+        'economic_loss': {}
+      };
+      angular.forEach(baseDataPoints, function (val, key) {
+        val.min = min_max_array[Object.keys(baseDataPoints).indexOf(key)][0]
+        val.max = min_max_array[Object.keys(baseDataPoints).indexOf(key)][1]
+      })
+      if (extra_data_points !== undefined) {
+        angular.forEach(extra_data_points, function(val, key) {
+          baseDataPoints[key] = val;
+        });
+      }
+      return baseDataPoints;
+    }
+
+    var earthquakes_min_max_array = [
+      [1.6, 9.1],
+      [0, 678],
+      [1, 86000],
+      [0, 5621790],
+      [0, 30000000000]
     ];
-    var floodDataPoints = commonDataPoints.concat(['value_3']);
+    var floods_min_max_array = [
+      [1.8190580436, 8.4078522747],
+      [24.3252, 4814280.64],
+      [0, 266],
+      [0, 300000],
+      [0, 60000000000]
+    ];
+    var storms_min_max_array = [
+      [1, 5],
+      [95, 295],
+      [1, 3042],
+      [0, 0],
+      [0, 158000000000]
+    ];
+    var tsunamis_min_max_array = [
+      [4.4, 8.8],
+      [5, 156],
+      [1, 316000],
+      [0, 461823],
+      [300000, 86000000000]
+    ];
+    var extra_flood_data_points = {
+      'value_3': {
+        'min': 1,
+        'max': 2
+      }
+    }
+    var earthquakeDataPoints = createDataPoints(earthquakes_min_max_array);
+    var floodDataPoints = createDataPoints(floods_min_max_array, extra_flood_data_points);
+    var stormsDataPoints = createDataPoints(storms_min_max_array);
+    var tsunamisDataPoints = createDataPoints(tsunamis_min_max_array);
     var dataPointMaps = {
-      'earthquakes' : commonDataPoints,
+      'earthquakes' : earthquakeDataPoints,
       'floods'      : floodDataPoints,
-      'storms'      : commonDataPoints,
-      'tsunamis'    : commonDataPoints,
+      'storms'      : stormsDataPoints,
+      'tsunamis'    : tsunamisDataPoints
     }
 
     // Make layers for all the data points
@@ -147,8 +219,8 @@
           colorFunc = getColorForTsunamis;
           onEachFeature = onEachFeatureTsunamis;
         }
-        angular.forEach(val, function(data_point, i) {
-          layers.push(makeEventLayer(colorFunc, onEachFeature, data_point));
+        angular.forEach(val, function(data_point_details, data_point_key) {
+          layers.push(makeEventLayer(colorFunc, onEachFeature, data_point_key, data_point_details));
         });
       });
     }
@@ -161,8 +233,8 @@
     // Function to reset all layers of a dataset
     $scope.clearDataset = function(dataset) {
       var ds_layers;
-      var dpl = commonDataPoints.length;
-      var fpl = floodDataPoints.length;
+      var dpl = Object.keys(earthquakeDataPoints).length;
+      var fpl = Object.keys(floodDataPoints).length;
       // Find all the layers for the dataset
       switch (dataset) {
         case 'earthquakes':
@@ -203,18 +275,20 @@
 
       // Find the layer for the dataset and datapoint
       var layer;
+      var common_keys = Object.keys(earthquakeDataPoints);
+      var flood_keys = Object.keys(floodDataPoints);
       switch (dataset) {
         case 'earthquakes':
-          layer = layers[commonDataPoints.indexOf(data_point)];
+          layer = layers[common_keys.indexOf(data_point)];
           break;
         case 'floods':
-          layer = layers[floodDataPoints.indexOf(data_point) + commonDataPoints.length];
+          layer = layers[flood_keys.indexOf(data_point) + common_keys.length];
           break;
         case 'storms':
-          layer = layers[commonDataPoints.indexOf(data_point) + commonDataPoints.length + floodDataPoints.length];
+          layer = layers[common_keys.indexOf(data_point) + common_keys.length + flood_keys.length];
           break;
         case 'tsunamis':
-          layer = layers[commonDataPoints.indexOf(data_point) + 2*commonDataPoints.length + floodDataPoints.length];
+          layer = layers[common_keys.indexOf(data_point) + 2*common_keys.length + flood_keys.length];
           break;
         default:
           return
@@ -230,6 +304,7 @@
           layer.addData(dataset_features);
         });
     };
+
   });
 
 })();
